@@ -1,0 +1,76 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model Organization {
+    id        String   @unique
+    timestamp DateTime
+
+    name     String
+    description String
+    contact  String
+
+    projects Project[]
+}
+
+model Project {
+    id        String   @unique
+    timestamp DateTime
+
+    name String
+
+    organization   Organization @relation(fields: [organizationId], references: [id])
+    organizationId String
+
+    issues Issue[]
+    stacks   Stack[]
+}
+
+model Stack {
+    id        Int      @id @default(autoincrement())
+    timestamp DateTime
+
+    name   String
+    version Int
+
+    Project   Project @relation(fields: [projectId], references: [id])
+    projectId String
+}
+
+model Issue {
+    id        String   @unique
+    timestamp DateTime
+
+    project   Project @relation(fields: [projectId], references: [id])
+    projectId String
+
+    status       IssueStatus
+    transactions Transaction[]
+}
+
+model Transaction {
+    id        Int      @id @default(autoincrement())
+    timestamp DateTime
+
+    issueId String
+    issue   Issue   @relation(fields: [issueId], references: [id])
+    status        IssueStatus
+}
+
+enum IssueStatus {
+    REPORTED
+    VERIFIED
+    FIXED
+    CLOSED
+}
